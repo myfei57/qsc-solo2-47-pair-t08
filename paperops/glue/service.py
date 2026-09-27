@@ -197,7 +197,7 @@ class GlueService:
 
     def wire(self) -> None:
         """Drop the verdict cache whenever the concentration band moves."""
-        self._bus.subscribe(topics.TOPIC_GLUE_CONC_SET, self._on_band_change)
+        self._bus.subscribe(topics.TOPIC_GLUE_CONC_SET, self._on_band_change, name="glue")
 
     # -------------------------------------------------------------- arithmetic
 

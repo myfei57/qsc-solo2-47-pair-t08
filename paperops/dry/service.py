@@ -187,7 +187,7 @@ class DryService:
 
     def wire(self) -> None:
         """Follow the steam valve so the dry model never drifts from the header."""
-        self._bus.subscribe(topics.TOPIC_STEAM_VALVE, self._on_valve)
+        self._bus.subscribe(topics.TOPIC_STEAM_VALVE, self._on_valve, name="dry")
 
     # -------------------------------------------------------------- arithmetic
 

@@ -207,7 +207,7 @@ class WaterService:
 
     def wire(self) -> None:
         """Drop the cached profile whenever the sensor map moves."""
-        self._bus.subscribe(topics.TOPIC_WATER_MAP, self._on_map_change)
+        self._bus.subscribe(topics.TOPIC_WATER_MAP, self._on_map_change, name="water")
 
     # -------------------------------------------------------------- arithmetic
 

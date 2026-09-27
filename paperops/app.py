@@ -61,7 +61,7 @@ class Services:
 def build_services(config: Config) -> Services:
     """Wire the whole service from a configuration."""
     journal = Journal(config.data_dir)
-    bus = EventBus()
+    bus = EventBus(config.data_dir)
     clock = LogicalClock()
     generations = Generations(journal)
     confirmations = Confirmations(journal, clock, IdSequence("cfm"), generations)
@@ -128,5 +128,6 @@ def build_services(config: Config) -> Services:
     water.wire()
     audit.wire()
     state.wire()
+    bus.resume()
     services.console = Console(services)
     return services

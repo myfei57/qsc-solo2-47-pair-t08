@@ -17,6 +17,8 @@ class AuditLog:
     def __init__(self, directory: str | None = None) -> None:
         self._records: list[AuditRecord] = []
         self._ids = IdSequence("evt")
+        self._seen: set[str] = set()
+        self._index: dict[str, AuditRecord] = {}
         self._seq = 0
         self._path = os.path.join(directory, self.LOG_NAME) if directory else None
         if directory is not None:
@@ -30,7 +32,15 @@ class AuditLog:
         tick: int,
         generation: int = 0,
         batch_id: str = "",
-    ) -> AuditRecord:
+        event_id: str = "",
+    ) -> AuditRecord | None:
+        """Record an event.
+
+        A redelivery carries the same durable event identifier; such a row is
+        skipped, so one event is never counted twice.
+        """
+        if event_id and event_id in self._seen:
+            return self._index.get(event_id)
         self._seq += 1
         record = AuditRecord(
             seq=self._seq,
@@ -40,8 +50,12 @@ class AuditLog:
             generation=int(generation),
             batch_id=batch_id,
             payload=payload,
+            event_id=event_id,
         )
         self._records.append(record)
+        if event_id:
+            self._seen.add(event_id)
+            self._index[event_id] = record
         self._write(record)
         return record
 
@@ -59,6 +73,8 @@ class AuditLog:
         """Empty the stream while keeping the sequence running."""
         cleared = len(self._records)
         self._records = []
+        self._seen.clear()
+        self._index.clear()
         if self._path is not None:
             Path(self._path).write_text("", encoding="utf-8")
         return cleared
@@ -81,6 +97,9 @@ class AuditLog:
                 record = AuditRecord.from_row(json.loads(line))
                 self._records.append(record)
                 self._seq = max(self._seq, record.seq)
+                if record.event_id:
+                    self._seen.add(record.event_id)
+                    self._index[record.event_id] = record
                 issued = parse_id(record.record_id)
                 if issued is not None:
                     self._ids.restore(issued)

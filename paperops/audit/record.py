@@ -17,6 +17,7 @@ class AuditRecord:
     generation: int
     batch_id: str
     payload: Any
+    event_id: str = ""
 
     def to_row(self) -> dict[str, Any]:
         return {
@@ -27,6 +28,7 @@ class AuditRecord:
             "generation": self.generation,
             "batch_id": self.batch_id,
             "payload": self.payload,
+            "event_id": self.event_id,
         }
 
     def as_filter_row(self) -> dict[str, Any]:
@@ -49,4 +51,5 @@ class AuditRecord:
             generation=int(row.get("generation", 0)),
             batch_id=str(row.get("batch_id", "")),
             payload=row.get("payload"),
+            event_id=str(row.get("event_id", "")),
         )

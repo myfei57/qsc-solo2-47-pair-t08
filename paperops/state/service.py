@@ -94,7 +94,7 @@ class StateService:
             topics.TOPIC_GLUE_CONC_SET,
             topics.TOPIC_WATER_MAP,
         ):
-            self._bus.subscribe(topic, self._expire_snapshot)
+            self._bus.subscribe(topic, self._expire_snapshot, name="state")
 
     def _expire_snapshot(self, event: Event) -> None:
         self._generations.advance(SNAPSHOT_NAME, "state-snapshot-expire")

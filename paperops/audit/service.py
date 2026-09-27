@@ -19,8 +19,8 @@ class AuditService:
         self._clock = clock
 
     def wire(self) -> None:
-        """Capture every event published on the bus."""
-        self._bus.subscribe("", self._capture)
+        """Capture every event published on the bus and resume any backlog."""
+        self._bus.subscribe("", self._capture, name="audit")
 
     def record(
         self,
@@ -28,13 +28,15 @@ class AuditService:
         payload: Any,
         generation: int = 0,
         batch_id: str = "",
-    ) -> AuditRecord:
+        event_id: str = "",
+    ) -> AuditRecord | None:
         return self._log.append(
             topic,
             payload,
             self._clock.tick,
             generation=generation,
             batch_id=batch_id,
+            event_id=event_id,
         )
 
     def records(self) -> tuple[AuditRecord, ...]:
@@ -66,4 +68,9 @@ class AuditService:
         return self._log.sequence
 
     def _capture(self, event: Event) -> None:
-        self._log.append(event.topic, event.payload, self._clock.tick)
+        self._log.append(
+            event.topic,
+            event.payload,
+            self._clock.tick,
+            event_id=event.event_id,
+        )
